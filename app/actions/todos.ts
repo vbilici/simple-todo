@@ -45,7 +45,6 @@ export async function createTodo(
     ...Object.fromEntries(formData),
     tags: formData.getAll("tags"),
   };
-  console.log("Form Data Object:", formDataObj);
 
   const result = todoSchema.safeParse(formDataObj);
 

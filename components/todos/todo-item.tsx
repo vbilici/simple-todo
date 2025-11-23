@@ -11,7 +11,7 @@ import {
 } from "../ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
-import { TODO_FORM_MODE, type TodoWithChildren } from "@/types/todo";
+import { Todo, TODO_FORM_MODE, type TodoWithChildren } from "@/types/todo";
 import {
   ChevronDown,
   ChevronRight,
@@ -19,6 +19,7 @@ import {
   Tag,
   Trash2,
   Edit,
+  Plus,
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { deleteTodo, toggleTodo } from "@/app/actions/todos";
@@ -37,17 +38,20 @@ import { toast } from "sonner";
 export function TodoItem({
   todo,
   level,
+  availableTodos,
 }: {
   todo: TodoWithChildren;
   level: number;
+  availableTodos?: Todo[];
 }) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isAddSubtaskDialogOpen, setIsAddSubtaskDialogOpen] = useState(false);
 
   return (
     <>
-      <Card className="w-full" style={{ marginLeft: level * 20 }}>
+      <Card className="w-full group" style={{ marginLeft: level * 20 }}>
         <CardHeader>
           <div className="flex items-start gap-3 justify-between">
             <div className="flex items-start gap-2">
@@ -126,37 +130,58 @@ export function TodoItem({
               ))}
             </div>
           )}
-          {isExpanded &&
-            todo.children.length > 0 &&
-            todo.children.map((childTodo) => (
-              <TodoItem key={childTodo.id} todo={childTodo} level={level + 1} />
-            ))}
         </CardContent>
         <CardFooter>
-          <div className="flex gap-2">
+          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsAddSubtaskDialogOpen(true)}
+            >
+              <Plus className="h-4 w-4 mr-1" />
+            </Button>
             <Button
               size="sm"
               variant="outline"
               onClick={() => setIsEditDialogOpen(true)}
             >
-              <Edit className="h-4 w-4 mr-1" /> Edit
+              <Edit className="h-4 w-4 mr-1" />
             </Button>
             <Button
               size="sm"
-              variant="destructive"
+              variant="outline"
               onClick={() => setIsDeleteDialogOpen(true)}
             >
-              <Trash2 className="h-4 w-4 mr-1" /> Delete
+              <Trash2 className="h-4 w-4 mr-1" />
             </Button>
           </div>
         </CardFooter>
       </Card>
+          {isExpanded &&
+            todo.children.length > 0 &&
+            todo.children.map((childTodo) => (
+              <TodoItem
+                key={childTodo.id}
+                todo={childTodo}
+                level={level + 1}
+                availableTodos={availableTodos}
+              />
+            ))}
       <UpsertTodoForm
         mode={TODO_FORM_MODE.UPDATE}
         todo={todo}
+        availableTodos={availableTodos}
         open={isEditDialogOpen}
         onOpenChange={setIsEditDialogOpen}
-      ></UpsertTodoForm>
+      />
+
+      <UpsertTodoForm
+        mode={TODO_FORM_MODE.CREATE}
+        open={isAddSubtaskDialogOpen}
+        onOpenChange={setIsAddSubtaskDialogOpen}
+        parentId={todo.id}
+        availableTodos={availableTodos}
+      />
 
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>

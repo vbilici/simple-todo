@@ -35,6 +35,8 @@ export function UpsertTodoForm({
   open: externalOpen,
   onOpenChange: externalOpenChange,
   triggerButton,
+  parentId,
+  availableTodos,
 }: UpsertTodoFormProps) {
   const action = mode === TODO_FORM_MODE.UPDATE ? updateTodo : createTodo;
   const [internalOpen, setInternalOpen] = useState(false);
@@ -49,6 +51,12 @@ export function UpsertTodoForm({
   });
   const [state, formAction, isPending] = useActionState(action, null);
   const formRef = useRef<HTMLFormElement>(null);
+  const [selectedParent, setSelectedParent] = useState<string | null>(() => {
+    if (parentId) return parentId;
+    if (mode === TODO_FORM_MODE.UPDATE && todo?.parent_id)
+      return todo.parent_id;
+    return null;
+  });
 
   useEffect(() => {
     if (state?.success) {
@@ -85,7 +93,6 @@ export function UpsertTodoForm({
         </DialogHeader>
 
         <form ref={formRef} action={formAction} className="space-y-4">
-
           <div>
             <Label htmlFor="title">Title</Label>
             <Input
@@ -103,6 +110,28 @@ export function UpsertTodoForm({
               name="description"
               defaultValue={todo?.description || ""}
             />
+          </div>
+          <div>
+            <Label htmlFor="parent_id">Parent Todo (Optional)</Label>
+            <Select
+              name="parent_id"
+              defaultValue={selectedParent || ""}
+              onValueChange={setSelectedParent}
+            >
+              <SelectTrigger id="parent_id" className="w-full">
+                <SelectValue placeholder="No Parent" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">No Parent</SelectItem>
+                {availableTodos
+                  ?.filter((t) => t.id !== todo?.id)
+                  ?.map((t) => (
+                    <SelectItem key={t.id} value={t.id}>
+                      {t.title}
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
           </div>
           <div>
             <Label htmlFor="priority">Priority</Label>
@@ -139,6 +168,9 @@ export function UpsertTodoForm({
               </PopoverContent>
             </Popover>
           </div>
+          {selectedParent && selectedParent !== "none" && (
+            <input type="hidden" name="parent_id" value={selectedParent} />
+          )}
           {dueDate && (
             <input
               type="hidden"

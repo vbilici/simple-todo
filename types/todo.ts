@@ -33,4 +33,6 @@ export type UpsertTodoFormProps = {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   triggerButton?: React.ReactNode;
+  parentId?: string;
+  availableTodos?: Todo[];
 };

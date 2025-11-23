@@ -38,7 +38,7 @@ export function TodoList({todos}: {todos: Todo[]}) {
   return (
     <div className="flex flex-col gap-4 w-full">
       {nestedTodos.map((todo) => (
-        <TodoItem key={todo.id} todo={todo} level={0} />
+        <TodoItem key={todo.id} todo={todo} level={0} availableTodos={todos}/>
       ))}
     </div>
   );
