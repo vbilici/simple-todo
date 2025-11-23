@@ -4,7 +4,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run"
   },
   "dependencies": {
     "@langchain/google-vertexai": "1.0.3",
@@ -34,16 +37,23 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@testing-library/jest-dom": "6.9.1",
+    "@testing-library/react": "16.3.0",
+    "@testing-library/user-event": "14.6.1",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "5.1.1",
+    "@vitest/ui": "4.0.13",
     "autoprefixer": "^10.4.20",
     "eslint": "^9",
     "eslint-config-next": "15.3.1",
+    "jsdom": "27.2.0",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
     "tailwindcss-animate": "^1.0.7",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "4.0.13"
   },
   "packageManager": "pnpm@10.14.0+sha256.297534e65d5842450539c1e8022c8831ab5e1fe2eb74664787a815519542d620"
 }
