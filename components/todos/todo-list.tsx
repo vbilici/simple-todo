@@ -7,8 +7,18 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useState } from "react";
+import {
+  useState,
+  useOptimistic,
+  useTransition,
+  useRef,
+  useEffect,
+  useMemo,
+} from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { createTodo } from "@/app/actions/todos";
+import { toast } from "sonner";
 
 function buildTodoTree(todos: Todo[]): TodoWithChildren[] {
   const todoMap = new Map<string, TodoWithChildren>();
@@ -38,17 +48,70 @@ function buildTodoTree(todos: Todo[]): TodoWithChildren[] {
 
 export function TodoList({ todos }: { todos: Todo[] }) {
   const [filter, setFilter] = useState<TodoFilters>("all");
-  const filteredTodos = todos.filter((todo) => {
-    if (todo.parent_id !== null) {
-      return true;
+  const [isPending, startTransition] = useTransition();
+  const [optimisticTodos, addOptimisticTodo] = useOptimistic(
+    todos,
+    (currentTodos, newTitle: string) => {
+      const tempTodo: Todo = {
+        id: `temp-${Date.now()}`,
+        user_id: "temp-user",
+        parent_id: null,
+        title: newTitle,
+        description: null,
+        priority: "medium",
+        completed: false,
+        due_date: null,
+        tags: [],
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+      return [tempTodo, ...currentTodos];
+    }
+  );
+
+  const inputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, [isPending]);
+
+  const handleQuickAdd = async () => {
+    const inputValue = inputRef.current?.value || "";
+    const trimmedTitle = inputValue.trim();
+    if (trimmedTitle === "") return;
+
+    if(inputRef.current) {
+      inputRef.current.value = "";
     }
 
-    if (filter === "all") return true;
-    if (filter === "completed") return todo.completed;
-    if (filter === "pending") return !todo.completed;
-  });
+    startTransition(async () => {
+      addOptimisticTodo(trimmedTitle);
 
-  const nestedTodos = buildTodoTree(filteredTodos);
+      const formData = new FormData();
+      formData.append("title", trimmedTitle);
+      formData.append("priority", "medium");
+
+      const result = await createTodo(null, formData);
+      if (result?.error) {
+        toast.error("Failed to create todo. Error: " + result.error);
+      }
+    });
+  };
+
+  const filteredTodos = useMemo(() => {
+    return optimisticTodos.filter((todo) => {
+      if (todo.parent_id !== null) {
+        return true;
+      }
+
+      if (filter === "all") return true;
+      if (filter === "completed") return todo.completed;
+      if (filter === "pending") return !todo.completed;
+    });
+  }, [optimisticTodos, filter]);
+
+  const nestedTodos = useMemo(() => {
+    return buildTodoTree(filteredTodos);
+  }, [filteredTodos]);
 
   if (nestedTodos.length === 0) {
     return (
@@ -60,6 +123,17 @@ export function TodoList({ todos }: { todos: Todo[] }) {
 
   return (
     <div className="flex flex-col gap-4 w-full">
+      <Input
+        ref={inputRef}
+        placeholder="Quick add todo..."
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            handleQuickAdd();
+          }
+        }}
+        disabled={isPending}
+        className="w-full"
+      />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="outline">Filter: {filter}</Button>
@@ -77,7 +151,12 @@ export function TodoList({ todos }: { todos: Todo[] }) {
         </DropdownMenuContent>
       </DropdownMenu>
       {nestedTodos.map((todo) => (
-        <TodoItem key={todo.id} todo={todo} level={0} availableTodos={todos} />
+        <TodoItem
+          key={todo.id}
+          todo={todo}
+          level={0}
+          availableTodos={optimisticTodos}
+        />
       ))}
     </div>
   );
