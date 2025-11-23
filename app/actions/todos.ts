@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import type { Todo, TodoActionState } from "@/types/todo";
+import { todoSchema, updateTodoSchema } from "@/lib/validations/todo";
 
 export async function getTodos(): Promise<Todo[]> {
   const supabase = await createClient();
@@ -40,41 +41,33 @@ export async function createTodo(
     return { error: "User not authenticated" };
   }
 
-  const title = formData.get("title") as string;
+  const formDataObj = {
+    ...Object.fromEntries(formData),
+    tags: formData.getAll("tags"),
+  };
+  console.log("Form Data Object:", formDataObj);
 
-  if (!title) {
-    return { error: "Title is required" };
+  const result = todoSchema.safeParse(formDataObj);
+
+  if (!result.success) {
+    const issues = result.error.issues
+      .map((issue) => `${issue.path.join(".")} - ${issue.message}`)
+      .join("; ");
+    return { error: issues };
   }
 
-  const description = formData.get("description") as string;
-  const cleanDescription = description.trim() === "" ? null : description;
-
-  const priority = formData.get("priority") as "low" | "medium" | "high";
-
-  if (!["low", "medium", "high"].includes(priority)) {
-    return { error: "Invalid priority value" };
-  }
-
-  const due_date = formData.get("due_date") as string | null;
-  if (due_date && isNaN(Date.parse(due_date))) {
-    return { error: "Invalid due date" };
-  }
-
-  const parent_id = formData.get("parent_id") as string | null;
-  const cleanParentId = parent_id && parent_id.trim() === "" ? null : parent_id;
-
-  const tags = formData.getAll("tags") as string[];
+  const validatedData = result.data;
 
   const { error, data } = await supabase
     .from("todos")
     .insert({
       user_id: user.id,
-      title,
-      description: cleanDescription,
-      priority,
-      due_date: due_date || null,
-      parent_id: cleanParentId || null,
-      tags,
+      title: validatedData.title,
+      description: validatedData.description,
+      priority: validatedData.priority,
+      due_date: validatedData.due_date,
+      parent_id: validatedData.parent_id,
+      tags: validatedData.tags ?? [],
     })
     .select()
     .single();
@@ -102,51 +95,41 @@ export async function updateTodo(
     return { error: "User not authenticated" };
   }
 
-  const id = formData.get("id") as string;
-  if (!id) {
-    return { error: "ID is required" };
+  const formDataObj = {
+    ...Object.fromEntries(formData),
+    tags: formData.getAll("tags"),
+  };
+
+  const result = updateTodoSchema.safeParse(formDataObj);
+
+  if (!result.success) {
+    const issues = result.error.issues
+      .map((issue) => `${issue.path.join(".")} - ${issue.message}`)
+      .join("; ");
+    return { error: issues };
   }
 
-  const title = formData.get("title") as string;
-  if (!title) {
-    return { error: "Title is required" };
-  }
+  const validatedData = result.data;
 
-  const description = formData.get("description") as string;
-  const cleanDescription = description.trim() === "" ? null : description;
-
-  const priority = formData.get("priority") as "low" | "medium" | "high";
-  if (!["low", "medium", "high"].includes(priority)) {
-    return { error: "Invalid priority value" };
-  }
-
-  const due_date = formData.get("due_date") as string | null;
-  if (due_date && isNaN(Date.parse(due_date))) {
-    return { error: "Invalid due date" };
-  }
-
-  const parent_id = formData.get("parent_id") as string | null;
-  const cleanParentId = parent_id && parent_id.trim() === "" ? null : parent_id;
-  const tags = formData.getAll("tags") as string[];
 
   const { error, data } = await supabase
     .from("todos")
     .update({
-      title,
-      description: cleanDescription,
-      priority,
-      due_date: due_date || null,
-      parent_id: cleanParentId || null,
-      tags,
+      title: validatedData.title,
+      description: validatedData.description,
+      priority: validatedData.priority,
+      due_date: validatedData.due_date,
+      parent_id: validatedData.parent_id,
+      tags: validatedData.tags ?? [],
     })
-    .eq("id", id)
+    .eq("id", validatedData.id)
     .eq("user_id", user.id)
     .select()
     .single();
 
   if (error) {
     console.error("Error updating todo:", error);
-    return {error: "Could not update todo"};
+    return { error: "Could not update todo" };
   }
   revalidatePath("/my-todos");
 
