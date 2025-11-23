@@ -1,0 +1,48 @@
+{
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@langchain/google-vertexai": "1.0.3",
+    "@radix-ui/react-accordion": "1.2.12",
+    "@radix-ui/react-checkbox": "1.3.3",
+    "@radix-ui/react-dialog": "1.1.15",
+    "@radix-ui/react-dropdown-menu": "2.1.16",
+    "@radix-ui/react-label": "2.1.8",
+    "@radix-ui/react-popover": "1.1.15",
+    "@radix-ui/react-select": "2.2.6",
+    "@radix-ui/react-slot": "1.2.4",
+    "@supabase/ssr": "0.7.0",
+    "@supabase/supabase-js": "2.84.0",
+    "class-variance-authority": "0.7.1",
+    "clsx": "2.1.1",
+    "date-fns": "4.1.0",
+    "langchain": "1.0.6",
+    "lucide-react": "0.554.0",
+    "next": "16.0.3",
+    "next-themes": "0.4.6",
+    "react": "19.2.0",
+    "react-day-picker": "9.11.1",
+    "react-dom": "19.2.0",
+    "sonner": "2.0.7",
+    "tailwind-merge": "3.4.0"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^9",
+    "eslint-config-next": "15.3.1",
+    "postcss": "^8",
+    "tailwindcss": "^3.4.1",
+    "tailwindcss-animate": "^1.0.7",
+    "typescript": "^5"
+  },
+  "packageManager": "pnpm@10.14.0+sha256.297534e65d5842450539c1e8022c8831ab5e1fe2eb74664787a815519542d620"
+}
