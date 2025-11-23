@@ -36,3 +36,5 @@ export type UpsertTodoFormProps = {
   parentId?: string;
   availableTodos?: Todo[];
 };
+
+export type TodoFilters = 'all' | 'completed' | 'pending';
