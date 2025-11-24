@@ -57,7 +57,7 @@ export function TodoItem({
   return (
     <>
       <Card className="w-full group" style={{ marginLeft: level * 20 }}>
-        <CardHeader>
+        <CardHeader className="relative">
           <div className="flex items-start gap-3 justify-between">
             <div className="flex items-start gap-2">
               <Checkbox
@@ -117,14 +117,38 @@ export function TodoItem({
                 </Button>
               )}
             </div>
+
+            <div className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex gap-1 bg-background/90 backdrop-blur-sm rounded-md p-1 z-10">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setIsAddSubtaskDialogOpen(true)}
+              >
+                <Plus className="h-4 w-4 mr-1" />
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setIsEditDialogOpen(true)}
+              >
+                <Edit className="h-4 w-4 mr-1" />
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setIsDeleteDialogOpen(true)}
+              >
+                <Trash2 className="h-4 w-4 mr-1" />
+              </Button>
+            </div>
           </div>
           {isExpanded && todo.description && (
             <CardDescription>{todo.description}</CardDescription>
           )}
         </CardHeader>
 
-        <CardContent>
-          {todo.tags?.length > 0 && (
+        {todo.tags?.length > 0 && (
+          <CardContent>
             <div className="flex gap-2 flex-wrap mb-4">
               {todo.tags.map((tag) => (
                 <Badge
@@ -136,33 +160,8 @@ export function TodoItem({
                 </Badge>
               ))}
             </div>
-          )}
-        </CardContent>
-        <CardFooter>
-          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsAddSubtaskDialogOpen(true)}
-            >
-              <Plus className="h-4 w-4 mr-1" />
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsEditDialogOpen(true)}
-            >
-              <Edit className="h-4 w-4 mr-1" />
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsDeleteDialogOpen(true)}
-            >
-              <Trash2 className="h-4 w-4 mr-1" />
-            </Button>
-          </div>
-        </CardFooter>
+          </CardContent>
+        )}
       </Card>
       {isExpanded &&
         todo.children.length > 0 &&
