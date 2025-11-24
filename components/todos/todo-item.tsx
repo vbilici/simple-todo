@@ -7,7 +7,6 @@ import {
   CardDescription,
   CardTitle,
   CardHeader,
-  CardFooter,
 } from "../ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
@@ -81,17 +80,15 @@ export function TodoItem({
               >
                 <div className="flex items-center gap-2">
                   <span>{todo.title}</span>
+                  {todo.priority !== "medium" && (
                   <Badge
                     variant={
-                      todo.priority === "high"
-                        ? "destructive"
-                        : todo.priority === "medium"
-                        ? "default"
-                        : "secondary"
+                      todo.priority === "high" ? "destructive" : "secondary"
                     }
                   >
                     {todo.priority}
                   </Badge>
+                  )}
                 </div>
               </CardTitle>
             </div>
