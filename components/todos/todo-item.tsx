@@ -44,10 +44,15 @@ export function TodoItem({
   level: number;
   availableTodos?: Todo[];
 }) {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isAddSubtaskDialogOpen, setIsAddSubtaskDialogOpen] = useState(false);
+  const [isDeleted, setIsDeleted] = useState(false);
+
+  if (isDeleted) {
+    return null;
+  }
 
   return (
     <>
@@ -90,29 +95,31 @@ export function TodoItem({
                 </div>
               </CardTitle>
             </div>
-            {todo.children.length > 0 && (
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => setIsExpanded(!isExpanded)}
-              >
-                {isExpanded ? (
-                  <ChevronDown className="h-4 w-4" />
-                ) : (
-                  <ChevronRight className="h-4 w-4" />
-                )}
-              </Button>
-            )}
-          </div>
-          {todo.description && (
-            <CardDescription>{todo.description}</CardDescription>
-          )}
+            <div className="flex items-center gap-2">
+              {todo.due_date && (
+                <span className="flex items-center gap-1">
+                  <Calendar className="h-4 w-4" />
+                  {format(new Date(todo.due_date), "MMM dd, yyyy")}
+                </span>
+              )}
 
-          {todo.due_date && (
-            <span className="flex items-center gap-1">
-              <Calendar className="h-4 w-4" />
-              {format(new Date(todo.due_date), "MMM dd, yyyy")}
-            </span>
+              {(todo.children.length > 0 || todo.description) && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setIsExpanded(!isExpanded)}
+                >
+                  {isExpanded ? (
+                    <ChevronDown className="h-4 w-4" />
+                  ) : (
+                    <ChevronRight className="h-4 w-4" />
+                  )}
+                </Button>
+              )}
+            </div>
+          </div>
+          {isExpanded && todo.description && (
+            <CardDescription>{todo.description}</CardDescription>
           )}
         </CardHeader>
 
@@ -157,16 +164,16 @@ export function TodoItem({
           </div>
         </CardFooter>
       </Card>
-          {isExpanded &&
-            todo.children.length > 0 &&
-            todo.children.map((childTodo) => (
-              <TodoItem
-                key={childTodo.id}
-                todo={childTodo}
-                level={level + 1}
-                availableTodos={availableTodos}
-              />
-            ))}
+      {isExpanded &&
+        todo.children.length > 0 &&
+        todo.children.map((childTodo) => (
+          <TodoItem
+            key={childTodo.id}
+            todo={childTodo}
+            level={level + 1}
+            availableTodos={availableTodos}
+          />
+        ))}
       <UpsertTodoForm
         mode={TODO_FORM_MODE.UPDATE}
         todo={todo}
@@ -202,14 +209,16 @@ export function TodoItem({
             <Button
               variant="destructive"
               onClick={async () => {
+                setIsDeleteDialogOpen(false);
+                setIsDeleted(true);
                 try {
                   await deleteTodo(todo.id);
-                  setIsDeleteDialogOpen(false);
                   toast.success("Todo deleted successfully");
                 } catch (error) {
                   toast.error(
                     "Failed to delete todo. Error: " + (error as Error).message
                   );
+                  setIsDeleted(false);
                 }
               }}
             >

@@ -10,7 +10,7 @@ export const todoSchema = z.object({
     z.iso.date("Invalid due date").nullish(), 
   ),
   parent_id: z.preprocess(
-    id => id === "" ? null : id,
+    id => id === "none" ? null : id,
     z.uuid().nullish()
   ), 
   tags: z.array(z.string()).optional(),
